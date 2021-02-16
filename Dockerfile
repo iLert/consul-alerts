@@ -1,5 +1,4 @@
 FROM alpine:edge
-MAINTAINER Acaleph <admin@acale.ph>
 
 ENV GOPATH /go
 
