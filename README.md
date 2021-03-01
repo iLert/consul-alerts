@@ -2,11 +2,14 @@
 
 # consul-alerts
 
-[![Join the chat at https://gitter.im/iLert/consul-alerts](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/iLert/consul-alerts?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://github.com/iLert/consul-alerts/workflows/release/badge.svg)](https://github.com/iLert/consul-alerts/actions)
+[![Docker Status](https://github.com/iLert/consul-alerts/workflows/docker-release/badge.svg)](https://github.com/iLert/consul-alerts/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/iLert/consul-alerts)](https://goreportcard.com/report/github.com/iLert/consul-alerts) [![GoDoc](https://godoc.org/github.com/iLert/consul-alerts?status.svg)](https://godoc.org/github.com/iLert/consul-alerts)
+[![Docker Pulls](https://img.shields.io/docker/pulls/ilert/consul-alerts.svg?maxAge=604800)](https://hub.docker.com/r/ilert/consul-alerts)
 
 A highly available daemon for sending notifications and reminders based on Consul health checks.
 
-Under the covers, consul-alerts leverages Consul's own leadership election and KV store to provide automatic failover and seamless operation in the case of a consul-alerts node failure and ensures that your notifications are still sent.
+Under the covers, consul-alerts leverages Consul's own leadership election and KV store to provide automastic failover and seamless operation in the case of a consul-alerts node failure and ensures that your notifications are still sent.
 
 consul-alerts provides a high degree of configuration including:
 
@@ -32,43 +35,47 @@ Latest release are found here:
 
 ## Installation
 
-```
-$ go get github.com/iLert/consul-alerts
-$ go install
+```sh
+go get github.com/iLert/consul-alerts
+go install
 ```
 
 This should install consul-alerts to `$GOPATH/bin`
 
 or pull the image from `docker`:
 
-```
-$ docker pull ilert/consul-alerts
+```sh
+docker pull ilert/consul-alerts
 
 ```
 
 ## Usage
 
-```
-$ consul-alerts start
+```sh
+consul-alerts start
 ```
 
 By default, this runs the daemon and API at localhost:9000 and connects to the local consul agent (localhost:8500) and default datacenter (dc1). These can be overriden by the following flags:
 
-```
-$ consul-alerts start --alert-addr=localhost:9000 --consul-addr=localhost:8500 --consul-dc=dc1 --consul-acl-token=""
+```sh
+consul-alerts start \
+  --alert-addr=localhost:9000 \
+  --consul-addr=localhost:8500 \
+  --consul-dc=dc1 \
+  --consul-acl-token=""
 ```
 
 Once the daemon is running, it can act as a handler for consul watches. At the moment only checks and events are supported.
 
-```
-$ consul watch -type checks consul-alerts watch checks --alert-addr=localhost:9000
-$ consul watch -type event consul-alerts watch event --alert-addr=localhost:9000
+```sh
+consul watch -type checks consul-alerts watch checks --alert-addr=localhost:9000
+consul watch -type event consul-alerts watch event --alert-addr=localhost:9000
 ```
 
 or run the watchers on the agent the daemon connects by adding the following flags during consul-alerts run:
 
-```
-$ consul-alerts start --watch-events --watch-checks
+```sh
+consul-alerts start --watch-events --watch-checks
 ```
 
 ## Usage - Docker
@@ -79,7 +86,7 @@ First option is using the consul agent built into the container. This option req
 
 Start consul:
 
-```
+```sh
 docker run -ti \
   --rm -p 9000:9000 \
   --hostname consul-alerts \
@@ -91,8 +98,8 @@ docker run -ti \
 
 Then in a separate terminal start consul-alerts:
 
-```
-$ docker exec -ti consul-alerts /bin/consul-alerts start --alert-addr=0.0.0.0:9000 --log-level=info --watch-events --watch-checks
+```sh
+docker exec -ti consul-alerts /bin/consul-alerts start --alert-addr=0.0.0.0:9000 --log-level=info --watch-events --watch-checks
 ```
 
 The second option is to link to an existing consul container through docker networking and --link option. This method can more easily
@@ -100,8 +107,8 @@ share the consul instance with other containers such as vault.
 
 First launch consul container:
 
-```
-$ docker run \
+```sh
+docker run \
   -p 8400:8400 \
   -p 8500:8500 \
   -p 8600:53/udp \
@@ -113,8 +120,8 @@ $ docker run \
 
 Then run consul alerts container:
 
-```
-$ docker run -ti \
+```sh
+docker run -ti \
   -p 9000:9000 \
   --hostname consul-alerts \
   --name consul-alerts \
@@ -126,8 +133,8 @@ $ docker run -ti \
 
 Last option is to launch the container and point at a remote consul instance:
 
-```
-$ docker run -ti \
+```sh
+docker run -ti \
   -p 9000:9000 \
   --hostname consul-alerts \
   --name consul-alerts \
@@ -144,9 +151,9 @@ To assure consistency between instances, configuration is stored in Consul's KV 
 
 A few suggestions on operating and bootstrapping your consul-alerts configuration via the KV store are located in the [Operations](#operations) section below.
 
-If **ACL**s are enabled the folowing policy should be configured for consul-alerts token:
+If **ACL**s are enabled the following policy should be configured for consul-alerts token:
 
-```
+```sh
 key "consul-alerts" {
   policy = "write"
 }
@@ -196,7 +203,7 @@ Ex. `emailer_only` would be located at `consul-alerts/config/notif-profiles/emai
 
 **Value:** A JSON object adhering to the schema shown below.
 
-```
+```json
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
@@ -212,23 +219,20 @@ Ex. `emailer_only` would be located at `consul-alerts/config/notif-profiles/emai
       "type": "object",
       "title": "Hash of Notifiers to configure.",
       "description": "A listing of Notifier names with a boolean value indicating if it should be enabled or not.",
-      "patternProperties" : {
-        ".{1,}" : { "type" : "string" }
+      "patternProperties": {
+        ".{1,}": { "type": "string" }
       }
     },
     "VarOverrides": {
       "type": "object",
       "title": "Hash of Notifier variables to override.",
       "description": "A listing of Notifier names with hash values containing the parameters to be overridden",
-      "patternProperties" : {
-        ".{1,}" : { "type" : "object" }
+      "patternProperties": {
+        ".{1,}": { "type": "object" }
       }
     }
   },
-  "required": [
-    "Interval",
-    "NotifList"
-  ]
+  "required": ["Interval", "NotifList"]
 }
 ```
 
@@ -240,12 +244,12 @@ Ex. `emailer_only` would be located at `consul-alerts/config/notif-profiles/emai
 
 **Value:**
 
-```
+```json
 {
   "Interval": 10,
   "NotifList": {
-    "log":false,
-    "email":true
+    "log": false,
+    "email": true
   }
 }
 ```
@@ -258,11 +262,11 @@ Ex. `emailer_only` would be located at `consul-alerts/config/notif-profiles/emai
 
 **Value:**
 
-```
+```json
 {
   "Interval": 0,
   "NotifList": {
-    "pagerduty":true
+    "pagerduty": true
   }
 }
 ```
@@ -275,11 +279,11 @@ Ex. `emailer_only` would be located at `consul-alerts/config/notif-profiles/emai
 
 **Value:**
 
-```
+```json
 {
   "Interval": 10,
   "NotifList": {
-    "email":true
+    "email": true
   },
   "VarOverrides": {
     "email": {
@@ -295,11 +299,11 @@ Ex. `emailer_only` would be located at `consul-alerts/config/notif-profiles/emai
 
 **Value:**
 
-```
+```json
 {
   "Interval": 0,
   "NotifList": {
-    "slack":false
+    "slack": false
   }
 }
 ```
@@ -317,7 +321,7 @@ To activate a Notification Profile for a set of entities matching a regular expr
 
 **Value:**
 
-```
+```json
 {
   "^infra-.*$": "infra-support-profile"
 }
@@ -594,7 +598,7 @@ prefix: `consul-alerts/config/notifiers/http-endpoint/`
 
 The value of 'payload' must be a json map of type string. Value will be rendered as a template.
 
-```
+```json
 {
   "message": "{{ range $name, $checks := .Nodes }}{{ range $check := $checks }}{{ $name }}:{{$check.Service}}:{{$check.Check}} is {{$check.Status}}.{{ end }}{{ end }}"
 }
@@ -640,7 +644,7 @@ Configuration may be set manually through consul UI or API, using configuration 
 
 Consulate Example:
 
-```
+```json
 consulate kv backup consul-alerts/config -f consul-alerts-config.json
 consulate kv restore consul-alerts/config -f consul-alerts-config.json --prune
 ```
