@@ -22,31 +22,25 @@ consul-alerts provides a high degree of configuration including:
 1. Consul 0.4+. Get it [here](http://consul.io).
 2. Configured `GOPATH`.
 
-## Releases
-
-Stable release are [here](https://github.com/iLert/consul-alerts/releases).
-
-Latest release are found here:
-
-- [darwin-amd64](https://bintray.com/artifact/download/darkcrux/generic/consul-alerts-latest-darwin-amd64.tar)
-- [FreeBSD-amd64](https://bintray.com/artifact/download/darkcrux/generic/consul-alerts-latest-FreeBSD-amd64.tar)
-- [linux-386](https://bintray.com/artifact/download/darkcrux/generic/consul-alerts-latest-linux-386.tar)
-- [linux-amd64](https://bintray.com/artifact/download/darkcrux/generic/consul-alerts-latest-linux-amd64.tar)
-
 ## Installation
+
+### a. Download latest binary
+
+Latest release are found [here](https://github.com/iLert/consul-alerts/releases/latest)
+
+### b. Build from source
 
 ```sh
 go get github.com/iLert/consul-alerts
 go install
 ```
 
-This should install consul-alerts to `$GOPATH/bin`
+> **Note**: This should install consul-alerts to `$GOPATH/bin`
 
-or pull the image from `docker`:
+### c. Pull docker image
 
 ```sh
 docker pull ilert/consul-alerts
-
 ```
 
 ## Usage
